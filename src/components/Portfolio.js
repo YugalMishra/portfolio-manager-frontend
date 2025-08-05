@@ -111,72 +111,170 @@ const FilterButton = styled(motion.button)`
   }
 `;
 
-const PortfolioGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-`;
-
-const PortfolioCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 2rem;
-  position: relative;
+const PortfolioTable = styled.div`
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
   overflow: hidden;
-  cursor: pointer;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
+  margin-top: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  position: relative;
   
   &::before {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s;
-  }
-  
-  &:hover::before {
-    left: 100%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
   }
 `;
 
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
-`;
-
-const AssetInfo = styled.div`
-  flex: 1;
-`;
-
-const AssetSymbol = styled.h3`
-  font-size: 1.5rem;
+const TableHeader = styled.div`
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1.5fr 1fr;
+  gap: 1rem;
+  align-items: center;
   font-weight: 700;
   color: white;
-  margin-bottom: 0.25rem;
-  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  }
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr 1fr;
+    & > div:nth-child(4),
+    & > div:nth-child(5) {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 2fr 1fr 1.5fr 1fr;
+    padding: 1.5rem 1rem;
+    & > div:nth-child(3),
+    & > div:nth-child(4),
+    & > div:nth-child(5),
+    & > div:nth-child(6) {
+      display: none;
+    }
+  }
 `;
 
-const AssetName = styled.p`
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+const TableBody = styled.div`
+  max-height: 600px;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.6) 0%, rgba(118, 75, 162, 0.6) 100%);
+    border-radius: 5px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    
+    &:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+    }
+  }
+`;
+
+const TableRow = styled(motion.div)`
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1.5fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  &:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    transform: translateX(8px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    
+    &::before {
+      opacity: 1;
+    }
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr 1fr;
+    & > div:nth-child(4),
+    & > div:nth-child(5) {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 2fr 1fr 1.5fr 1fr;
+    padding: 1.2rem 1rem;
+    & > div:nth-child(3),
+    & > div:nth-child(4),
+    & > div:nth-child(5),
+    & > div:nth-child(6) {
+      display: none;
+    }
+  }
+`;
+
+const AssetCell = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+`;
+
+const AssetSymbol = styled.div`
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: white;
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+`;
+
+const AssetName = styled.div`
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  font-weight: 500;
 `;
 
 const AssetType = styled.span`
@@ -187,11 +285,222 @@ const AssetType = styled.span`
     'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)'
   };
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 16px;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
+  display: inline-block;
+  margin-top: 0.3rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.5px;
+`;
+
+const CellValue = styled.div`
+  color: white;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+`;
+
+const PriceCell = styled.div`
+  color: white;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+`;
+
+const PerformanceCell = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: #FFFFFF;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 1rem 1.2rem;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  background: ${props => props.positive ? 
+    'linear-gradient(135deg, #00FF88 0%, #00E676 25%, #00C853 50%, #00BFA5 100%)' :
+    'linear-gradient(135deg, #FF4081 0%, #FF1744 25%, #E91E63 50%, #F50057 100%)'
+  };
+  
+  border: 3px solid ${props => props.positive ? 
+    '#00FF88' : 
+    '#FF4081'
+  };
+  
+  box-shadow: 
+    0 0 30px ${props => props.positive ? 
+      'rgba(0, 255, 136, 0.6)' : 
+      'rgba(255, 64, 129, 0.6)'
+    },
+    0 0 60px ${props => props.positive ? 
+      'rgba(0, 255, 136, 0.3)' : 
+      'rgba(255, 64, 129, 0.3)'
+    },
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: left 0.8s ease;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: ${props => props.positive ? 
+      'radial-gradient(circle, rgba(0, 255, 136, 0.1) 0%, transparent 70%)' :
+      'radial-gradient(circle, rgba(255, 64, 129, 0.1) 0%, transparent 70%)'
+    };
+    animation: pulse 2s ease-in-out infinite;
+    z-index: -1;
+  }
+  
+  &:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 
+      0 0 40px ${props => props.positive ? 
+        'rgba(0, 255, 136, 0.8)' : 
+        'rgba(255, 64, 129, 0.8)'
+      },
+      0 0 80px ${props => props.positive ? 
+        'rgba(0, 255, 136, 0.4)' : 
+        'rgba(255, 64, 129, 0.4)'
+      },
+      0 15px 35px rgba(0, 0, 0, 0.3),
+      inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    
+    &::before {
+      left: 100%;
+    }
+  }
+  
+  svg {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+    animation: ${props => props.positive ? 'glow-bounce-up' : 'glow-bounce-down'} 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+  }
+  
+  @keyframes glow-bounce-up {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0) rotate(0deg);
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+    }
+    40% {
+      transform: translateY(-4px) rotate(8deg);
+      filter: drop-shadow(0 0 15px rgba(0, 255, 136, 1));
+    }
+    60% {
+      transform: translateY(-2px) rotate(-4deg);
+      filter: drop-shadow(0 0 12px rgba(0, 255, 136, 0.9));
+    }
+  }
+  
+  @keyframes glow-bounce-down {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0) rotate(0deg);
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+    }
+    40% {
+      transform: translateY(4px) rotate(-8deg);
+      filter: drop-shadow(0 0 15px rgba(255, 64, 129, 1));
+    }
+    60% {
+      transform: translateY(2px) rotate(4deg);
+      filter: drop-shadow(0 0 12px rgba(255, 64, 129, 0.9));
+    }
+  }
+  
+  .performance-value {
+    font-size: 1.2rem;
+    font-weight: 900;
+    text-shadow: 
+      0 0 10px rgba(255, 255, 255, 0.8),
+      0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.8px;
+    filter: brightness(1.2);
+  }
+  
+  .performance-percentage {
+    font-size: 1rem;
+    font-weight: 800;
+    text-shadow: 
+      0 0 8px rgba(255, 255, 255, 0.6),
+      0 1px 2px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    filter: brightness(1.1);
+    
+    &::before {
+      content: ${props => props.positive ? '"🚀"' : '"⚡"'};
+      font-size: 1rem;
+      margin-right: 0.3rem;
+      animation: spin 3s linear infinite;
+    }
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.8rem 1rem;
+    gap: 0.6rem;
+    
+    .performance-value {
+      font-size: 1rem;
+    }
+    
+    .performance-percentage {
+      font-size: 0.9rem;
+    }
+  }
+`;
+
+const ActionsCell = styled.div`
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
 `;
 
 const Actions = styled.div`
@@ -202,8 +511,8 @@ const Actions = styled.div`
 const ActionButton = styled(motion.button).withConfig({
   shouldForwardProp: (prop) => prop !== 'danger'
 })`
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: none;
   background: ${props => props.danger ? 
@@ -215,71 +524,25 @@ const ActionButton = styled(motion.button).withConfig({
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px ${props => props.danger ? 
+    'rgba(239, 68, 68, 0.3)' : 
+    'rgba(102, 126, 234, 0.3)'
+  };
+  border: 1px solid rgba(255, 255, 255, 0.2);
   
   &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transform: scale(1.15) translateY(-2px);
+    box-shadow: 0 8px 20px ${props => props.danger ? 
+      'rgba(239, 68, 68, 0.4)' : 
+      'rgba(102, 126, 234, 0.4)'
+    };
+    border-color: rgba(255, 255, 255, 0.4);
   }
-`;
-
-const CardBody = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-`;
-
-const MetricItem = styled.div`
-  text-align: center;
-`;
-
-const MetricLabel = styled.p`
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
-  margin-bottom: 0.25rem;
-  text-transform: uppercase;
-  font-weight: 500;
-`;
-
-const MetricValue = styled.p`
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
-`;
-
-const PerformanceSection = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-`;
-
-const CurrentValue = styled.div`
-  text-align: left;
-`;
-
-const ValueLabel = styled.p`
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
-  margin-bottom: 0.25rem;
-`;
-
-const ValueAmount = styled.p`
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
-`;
-
-const PerformanceIndicator = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.positive ? '#10B981' : '#EF4444'};
-  font-weight: 600;
+  
+  &:active {
+    transform: scale(1.05);
+  }
 `;
 
 const EmptyState = styled(motion.div)`
@@ -486,35 +749,74 @@ const Portfolio = () => {
             </p>
           </EmptyState>
         ) : (
-          <PortfolioGrid>
-            <AnimatePresence>
-              {filteredItems.map((item, index) => {
-                const gainLoss = calculateGainLoss(item);
-                const percentageChange = calculatePercentageChange(item);
-                const isPositive = gainLoss >= 0;
+          <PortfolioTable>
+            <TableHeader>
+              <div>Asset</div>
+              <div>Quantity</div>
+              <div>Purchase Price</div>
+              <div>Current Price</div>
+              <div>Purchase Date</div>
+              <div>Current Value</div>
+              <div>Performance</div>
+              <div>Actions</div>
+            </TableHeader>
+            <TableBody>
+              <AnimatePresence>
+                {filteredItems.map((item, index) => {
+                  const gainLoss = calculateGainLoss(item);
+                  const percentageChange = calculatePercentageChange(item);
+                  const isPositive = gainLoss >= 0;
+                  const currentValue = item.quantity * item.current_price;
 
-                return (
-                  <PortfolioCard
-                    key={item.id}
-                    variants={itemVariants}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <CardHeader>
-                      <AssetInfo>
+                  return (
+                    <TableRow
+                      key={item.id}
+                      variants={itemVariants}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.05 }}
+                      whileHover={{ x: 5 }}
+                    >
+                      <AssetCell>
                         <AssetSymbol>{item.symbol}</AssetSymbol>
                         <AssetName>{item.name}</AssetName>
                         <AssetType type={item.type}>{item.type}</AssetType>
-                      </AssetInfo>
-                      <Actions>
+                      </AssetCell>
+                      
+                      <CellValue>{item.quantity}</CellValue>
+                      
+                      <PriceCell>${item.purchase_price}</PriceCell>
+                      
+                      <PriceCell>${item.current_price}</PriceCell>
+                      
+                      <CellValue>{new Date(item.purchase_date).toLocaleDateString()}</CellValue>
+                      
+                      <PriceCell>${currentValue.toLocaleString()}</PriceCell>
+                      
+                      <PerformanceCell 
+                        positive={isPositive}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                      >
+                        {isPositive ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
+                        <div>
+                          <div className="performance-value">${Math.abs(gainLoss).toLocaleString()}</div>
+                          <div className="performance-percentage">
+                            {isPositive ? '+' : ''}{percentageChange.toFixed(2)}%
+                          </div>
+                        </div>
+                      </PerformanceCell>
+                      
+                      <ActionsCell>
                         <ActionButton
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                         >
-                          <Edit size={16} />
+                          <Edit size={14} />
                         </ActionButton>
                         <ActionButton
                           danger
@@ -522,50 +824,15 @@ const Portfolio = () => {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={14} />
                         </ActionButton>
-                      </Actions>
-                    </CardHeader>
-
-                    <CardBody>
-                      <MetricItem>
-                        <MetricLabel>Quantity</MetricLabel>
-                        <MetricValue>{item.quantity}</MetricValue>
-                      </MetricItem>
-                      <MetricItem>
-                        <MetricLabel>Purchase Price</MetricLabel>
-                        <MetricValue>${item.purchase_price}</MetricValue>
-                      </MetricItem>
-                      <MetricItem>
-                        <MetricLabel>Current Price</MetricLabel>
-                        <MetricValue>${item.current_price}</MetricValue>
-                      </MetricItem>
-                      <MetricItem>
-                        <MetricLabel>Purchase Date</MetricLabel>
-                        <MetricValue>{new Date(item.purchase_date).toLocaleDateString()}</MetricValue>
-                      </MetricItem>
-                    </CardBody>
-
-                    <PerformanceSection>
-                      <CurrentValue>
-                        <ValueLabel>Current Value</ValueLabel>
-                        <ValueAmount>${(item.quantity * item.current_price).toLocaleString()}</ValueAmount>
-                      </CurrentValue>
-                      <PerformanceIndicator positive={isPositive}>
-                        {isPositive ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
-                        <div>
-                          <div>${Math.abs(gainLoss).toLocaleString()}</div>
-                          <div style={{ fontSize: '0.9rem' }}>
-                            {isPositive ? '+' : ''}{percentageChange.toFixed(2)}%
-                          </div>
-                        </div>
-                      </PerformanceIndicator>
-                    </PerformanceSection>
-                  </PortfolioCard>
-                );
-              })}
-            </AnimatePresence>
-          </PortfolioGrid>
+                      </ActionsCell>
+                    </TableRow>
+                  );
+                })}
+              </AnimatePresence>
+            </TableBody>
+          </PortfolioTable>
         )}
       </PortfolioContainer>
     </motion.div>

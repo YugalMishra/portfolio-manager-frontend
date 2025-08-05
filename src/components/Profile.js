@@ -343,7 +343,7 @@ const Profile = () => {
     department: 'Financial Services',
     experience: '5+ Years',
     specialization: 'Portfolio Optimization',
-    bio: 'Experienced investment analyst specializing in portfolio management and risk assessment. Passionate about helping clients achieve their financial goals through strategic investment planning.'
+    bio: 'I am a goal-oriented individual committed to making informed financial decisions with a long-term perspective. I value expert insight, strategic risk assessment, and a data-driven approach to investment planning. My objective is to collaborate with professionals who can help translate market complexity into clear, actionable strategies aligned with my financial aspirations.'
   });
 
   const handleSave = () => {
@@ -435,16 +435,7 @@ const Profile = () => {
                 <StatLabel>Success Rate</StatLabel>
               </StatCard>
 
-              <StatCard
-                variants={itemVariants}
-                whileHover={{ scale: 1.05 }}
-              >
-                <StatIcon gradient="linear-gradient(135deg, #F59E0B 0%, #D97706 100%)">
-                  <Award size={20} />
-                </StatIcon>
-                <StatValue>12</StatValue>
-                <StatLabel>Certifications</StatLabel>
-              </StatCard>
+              
 
               <StatCard
                 variants={itemVariants}
@@ -531,31 +522,9 @@ const Profile = () => {
                 </InfoContent>
               </InfoItem>
 
-              <InfoItem
-                variants={itemVariants}
-                whileHover={{ x: 5 }}
-              >
-                <InfoIcon gradient="linear-gradient(135deg, #EF4444 0%, #DC2626 100%)">
-                  <Briefcase size={18} />
-                </InfoIcon>
-                <InfoContent>
-                  <InfoLabel>Department</InfoLabel>
-                  <InfoValue>{userProfile.department}</InfoValue>
-                </InfoContent>
-              </InfoItem>
+              
 
-              <InfoItem
-                variants={itemVariants}
-                whileHover={{ x: 5 }}
-              >
-                <InfoIcon gradient="linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)">
-                  <Award size={18} />
-                </InfoIcon>
-                <InfoContent>
-                  <InfoLabel>Specialization</InfoLabel>
-                  <InfoValue>{userProfile.specialization}</InfoValue>
-                </InfoContent>
-              </InfoItem>
+              
             </InfoGrid>
 
             <InfoSection style={{ marginTop: '2rem' }}>
