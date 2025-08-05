@@ -1,0 +1,48 @@
+USER REQUIREMENTS:
+
+This portfolio application is a single user application.
+
+---> Add Portfolio Item (Buy/Sell Asset(recording the buying and selling of asset):
+The user can add:
+*Asset Name (Symbol)
+*Asset Type
+*Action (Buy / Sell)
+*Quantity
+*Price per unit
+*Transaction Date
+
+**On Buying a asset:
+Deduct amount from Settlement Account
+
+**On Selling the asset:
+Add amount to Settlement Account
+
+--->View all Portfolios:
+User can see all current holdings:
+*Stock name
+*Quantity
+*Average buy price
+*Current price (from API)
+*profit/loss
+*gain/loss percentage
+
+
+--->Settlement Account
+*Tracks user’s available cash
+*Initialized with a starting balance
+*Automatically updates with:
+   -Buys
+   -Sells
+   -Manual deposits/withdrawals
+
+
+--->Analysis(include pie charts,graphs,histograms etc)
+*Holdings summary (total invested, current value)
+*Transaction history table
+*Pie chart of asset distribution
+*Profit/Loss report with:
+  -Realized & unrealized profit(optional)
+  -Gain/loss percentages
+  -Best/worst performing stocks
+*suggestions to sell or buy asset based on the asset trends.
+
