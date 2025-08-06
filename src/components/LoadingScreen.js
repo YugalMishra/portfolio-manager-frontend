@@ -172,7 +172,7 @@ const LoadingScreen = () => {
         animate="visible"
       >
         <Logo variants={itemVariants}>
-          Portfolio Pro
+          WEALTHFOLIO
         </Logo>
         
         <LoadingText variants={itemVariants}>
