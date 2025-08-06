@@ -359,7 +359,7 @@ const Navbar = () => {
             >
               <DollarSign size={24} color="#667eea" />
             </LogoIcon>
-            Portfolio Pro
+            WEALTHFOLIO
           </Logo>
 
           <NavLinks>
