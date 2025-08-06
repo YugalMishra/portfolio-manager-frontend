@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, Search, Filter } from 'lucide-react';
-import { getPortfolio, deletePortfolioItem } from '../services/mockData';
+import { DollarSign, Search } from 'lucide-react';
+import { getPortfolio, deletePortfolioItem, updatePortfolioItem } from '../services/mockData';
 import { toast } from 'react-hot-toast';
 
 const Portfolio = () => {
@@ -8,6 +8,7 @@ const Portfolio = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [sellModal, setSellModal] = useState({ isOpen: false, item: null, quantity: '' });
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -326,39 +327,25 @@ const Portfolio = () => {
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                         <button
+                          onClick={() => setSellModal({ isOpen: true, item, quantity: item.quantity })}
                           style={{
-                            background: '#007bff',
-                            border: '1px solid #0056b3',
+                            background: '#28a745',
+                            border: '1px solid #1e7e34',
                             borderRadius: '6px',
-                            padding: '0.5rem',
+                            padding: '0.5rem 1rem',
                             color: 'white',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            fontSize: '0.9rem',
+                            fontWeight: '600'
                           }}
-                          onMouseEnter={(e) => e.target.style.background = '#0056b3'}
-                          onMouseLeave={(e) => e.target.style.background = '#007bff'}
+                          onMouseEnter={(e) => e.target.style.background = '#1e7e34'}
+                          onMouseLeave={(e) => e.target.style.background = '#28a745'}
                         >
-                          <Edit size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id, item.symbol)}
-                          style={{
-                            background: '#dc3545',
-                            border: '1px solid #c82333',
-                            borderRadius: '6px',
-                            padding: '0.5rem',
-                            color: 'white',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                          onMouseEnter={(e) => e.target.style.background = '#c82333'}
-                          onMouseLeave={(e) => e.target.style.background = '#dc3545'}
-                        >
-                          <Trash2 size={14} />
+                          <DollarSign size={14} style={{ marginRight: '0.25rem' }} />
+                          Sell
                         </button>
                       </div>
                     </td>
