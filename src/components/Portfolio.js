@@ -39,6 +39,51 @@ const Portfolio = () => {
     }
   };
 
+  const openSellModal = (item) => {
+    setSellModal({ isOpen: true, item, quantity: '' });
+  };
+
+  const closeSellModal = () => {
+    setSellModal({ isOpen: false, item: null, quantity: '' });
+  };
+
+  const handleSell = async () => {
+    const { item, quantity } = sellModal;
+    const sellQuantity = parseInt(quantity);
+
+    // Validation
+    if (!sellQuantity || sellQuantity <= 0) {
+      toast.error('Please enter a valid quantity');
+      return;
+    }
+
+    if (sellQuantity > item.quantity) {
+      toast.error('Cannot sell more than you own');
+      return;
+    }
+
+    try {
+      if (sellQuantity === item.quantity) {
+        // Sell all shares - remove item completely
+        await deletePortfolioItem(item.id);
+        setPortfolioItems(prev => prev.filter(i => i.id !== item.id));
+        toast.success(`Sold all ${item.quantity} shares of ${item.symbol}`);
+      } else {
+        // Partial sale - update quantity
+        const updatedItem = { ...item, quantity: item.quantity - sellQuantity };
+        await updatePortfolioItem(item.id, updatedItem);
+        setPortfolioItems(prev => prev.map(i => 
+          i.id === item.id ? updatedItem : i
+        ));
+        toast.success(`Sold ${sellQuantity} shares of ${item.symbol}`);
+      }
+      closeSellModal();
+    } catch (error) {
+      console.error('Error selling item:', error);
+      toast.error('Failed to sell shares');
+    }
+  };
+
   const calculateGainLoss = (item) => {
     return (item.current_price - item.purchase_price) * item.quantity;
   };
@@ -327,7 +372,7 @@ const Portfolio = () => {
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                         <button
-                          onClick={() => setSellModal({ isOpen: true, item, quantity: item.quantity })}
+                          onClick={() => openSellModal(item)}
                           style={{
                             background: '#28a745',
                             border: '1px solid #1e7e34',
@@ -354,6 +399,153 @@ const Portfolio = () => {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Sell Modal */}
+      {sellModal.isOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '2rem',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+          }}>
+            <h3 style={{
+              margin: '0 0 1.5rem 0',
+              color: '#333',
+              fontSize: '1.5rem',
+              fontWeight: '600'
+            }}>
+              Sell {sellModal.item?.symbol}
+            </h3>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <p style={{ 
+                color: '#666', 
+                margin: '0 0 0.5rem 0',
+                fontSize: '0.9rem'
+              }}>
+                Available: {sellModal.item?.quantity} shares
+              </p>
+              <p style={{ 
+                color: '#666', 
+                margin: '0 0 1rem 0',
+                fontSize: '0.9rem'
+              }}>
+                Current Price: ${sellModal.item?.current_price}
+              </p>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                color: '#333',
+                fontWeight: '500'
+              }}>
+                Quantity to Sell
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={sellModal.item?.quantity}
+                value={sellModal.quantity}
+                onChange={(e) => setSellModal(prev => ({ ...prev, quantity: e.target.value }))}
+                placeholder="Enter quantity"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#007bff'}
+                onBlur={(e) => e.target.style.borderColor = '#ddd'}
+              />
+            </div>
+
+            {sellModal.quantity && (
+              <div style={{
+                background: '#f8f9fa',
+                padding: '1rem',
+                borderRadius: '8px',
+                marginBottom: '1.5rem',
+                border: '1px solid #e9ecef'
+              }}>
+                <p style={{ 
+                  margin: '0',
+                  color: '#333',
+                  fontWeight: '600'
+                }}>
+                  Estimated Sale Value: ${(parseFloat(sellModal.quantity) * sellModal.item?.current_price).toLocaleString()}
+                </p>
+              </div>
+            )}
+
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={closeSellModal}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: '2px solid #6c757d',
+                  borderRadius: '8px',
+                  background: 'white',
+                  color: '#6c757d',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '1rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#6c757d';
+                  e.target.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'white';
+                  e.target.style.color = '#6c757d';
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSell}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: '2px solid #28a745',
+                  borderRadius: '8px',
+                  background: '#28a745',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '1rem'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#1e7e34'}
+                onMouseLeave={(e) => e.target.style.background = '#28a745'}
+              >
+                <DollarSign size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                Sell Shares
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
