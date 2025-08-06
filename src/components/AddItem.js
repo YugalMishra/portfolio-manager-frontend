@@ -576,30 +576,7 @@ const AddItem = () => {
                 )}
               </FormGroup>
 
-              <FormGroup variants={itemVariants}>
-                <Label>
-                  <DollarSign size={16} />
-                  Current Price
-                </Label>
-                <Input
-                  type="number"
-                  name="current_price"
-                  value={formData.current_price}
-                  onChange={handleInputChange}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
-                  required
-                />
-                {errors.current_price && (
-                  <ErrorMessage
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    {errors.current_price}
-                  </ErrorMessage>
-                )}
-              </FormGroup>
+              
             </FormRow>
 
             <FormGroup variants={itemVariants}>
