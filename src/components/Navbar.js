@@ -419,24 +419,8 @@ const Navbar = () => {
                   <User size={16} />
                   Profile
                 </DropdownItem>
-                <DropdownItem
-                  whileHover={{ x: 5 }}
-                  onClick={() => {
-                    navigate('/settings');
-                    setUserDropdownOpen(false);
-                  }}
-                >
-                  <Settings size={16} />
-                  Settings
-                </DropdownItem>
-                <DropdownItem
-                  whileHover={{ x: 5 }}
-                  onClick={() => setUserDropdownOpen(false)}
-                  style={{ borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: '0.5rem', paddingTop: '0.75rem' }}
-                >
-                  <LogOut size={16} />
-                  Sign Out
-                </DropdownItem>
+                
+                
               </UserDropdown>
             )}
           </UserSection>

@@ -1,350 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import styled from 'styled-components';
-import { 
-  Edit, 
-  Trash2, 
-  TrendingUp, 
-  TrendingDown, 
-  Search,
-  Filter,
-  ArrowUpRight,
-  ArrowDownRight
-} from 'lucide-react';
+import { Edit, Trash2, Search, Filter } from 'lucide-react';
 import { getPortfolio, deletePortfolioItem } from '../services/mockData';
 import { toast } from 'react-hot-toast';
 
-const PortfolioContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-`;
-
-const Header = styled(motion.div)`
-  text-align: center;
-  margin-bottom: 3rem;
-`;
-
-const Title = styled.h1`
-  font-size: 3rem;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-const Controls = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const SearchBox = styled.div`
-  position: relative;
-  flex: 1;
-  min-width: 300px;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  color: white;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-  }
-  
-  &:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.15);
-  }
-`;
-
-const SearchIcon = styled.div`
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.6);
-`;
-
-const FilterButton = styled(motion.button)`
-  padding: 1rem 1.5rem;
-  background: ${props => props.active ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)'};
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-  }
-`;
-
-const PortfolioGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-`;
-
-const PortfolioCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 2rem;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s;
-  }
-  
-  &:hover::before {
-    left: 100%;
-  }
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
-`;
-
-const AssetInfo = styled.div`
-  flex: 1;
-`;
-
-const AssetSymbol = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 0.25rem;
-  font-family: 'JetBrains Mono', monospace;
-`;
-
-const AssetName = styled.p`
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-`;
-
-const AssetType = styled.span`
-  background: ${props => 
-    props.type === 'stock' ? 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)' :
-    props.type === 'bond' ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' :
-    props.type === 'crypto' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' :
-    'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)'
-  };
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-`;
-
-const Actions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const ActionButton = styled(motion.button).withConfig({
-  shouldForwardProp: (prop) => prop !== 'danger'
-})`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: ${props => props.danger ? 
-    'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)' : 
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-  };
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  }
-`;
-
-const CardBody = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-`;
-
-const MetricItem = styled.div`
-  text-align: center;
-`;
-
-const MetricLabel = styled.p`
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
-  margin-bottom: 0.25rem;
-  text-transform: uppercase;
-  font-weight: 500;
-`;
-
-const MetricValue = styled.p`
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
-`;
-
-const PerformanceSection = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-`;
-
-const CurrentValue = styled.div`
-  text-align: left;
-`;
-
-const ValueLabel = styled.p`
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
-  margin-bottom: 0.25rem;
-`;
-
-const ValueAmount = styled.p`
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
-`;
-
-const PerformanceIndicator = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.positive ? '#10B981' : '#EF4444'};
-  font-weight: 600;
-`;
-
-const EmptyState = styled(motion.div)`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: rgba(255, 255, 255, 0.7);
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: 1rem;
-`;
-
 const Portfolio = () => {
   const [portfolioItems, setPortfolioItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [filterType, setFilterType] = useState('all');
 
   useEffect(() => {
-    fetchPortfolioItems();
+    const fetchPortfolio = async () => {
+      try {
+        const data = await getPortfolio();
+        setPortfolioItems(data);
+      } catch (error) {
+        console.error('Error fetching portfolio:', error);
+        toast.error('Failed to load portfolio');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolio();
   }, []);
-
-  useEffect(() => {
-    filterItems();
-  }, [portfolioItems, searchTerm, activeFilter]);
-
-  const fetchPortfolioItems = async () => {
-    try {
-      const portfolioData = await getPortfolio();
-      setPortfolioItems(portfolioData);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching portfolio:', error);
-      toast.error('Failed to load portfolio');
-      setLoading(false);
-    }
-  };
-
-  const filterItems = () => {
-    let filtered = portfolioItems;
-
-    // Filter by type
-    if (activeFilter !== 'all') {
-      filtered = filtered.filter(item => item.type === activeFilter);
-    }
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(item =>
-        item.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredItems(filtered);
-  };
 
   const handleDelete = async (id, symbol) => {
     if (window.confirm(`Are you sure you want to delete ${symbol}?`)) {
       try {
         await deletePortfolioItem(id);
-        toast.success(`${symbol} deleted successfully`);
-        fetchPortfolioItems();
+        setPortfolioItems(prev => prev.filter(item => item.id !== id));
+        toast.success(`${symbol} removed from portfolio`);
       } catch (error) {
         console.error('Error deleting item:', error);
         toast.error('Failed to delete item');
@@ -353,222 +39,351 @@ const Portfolio = () => {
   };
 
   const calculateGainLoss = (item) => {
-    const invested = item.quantity * item.purchase_price;
-    const current = item.quantity * item.current_price;
-    return current - invested;
+    return (item.current_price - item.purchase_price) * item.quantity;
   };
 
   const calculatePercentageChange = (item) => {
     return ((item.current_price - item.purchase_price) / item.purchase_price) * 100;
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  };
+  const filteredItems = portfolioItems.filter(item => {
+    const matchesSearch = item.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType === 'all' || item.type.toLowerCase() === filterType.toLowerCase();
+    return matchesSearch && matchesFilter;
+  });
 
   if (loading) {
     return (
-      <PortfolioContainer>
-        <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            style={{ 
-              width: '50px', 
-              height: '50px', 
-              border: '3px solid rgba(255,255,255,0.3)',
-              borderTop: '3px solid white',
-              borderRadius: '50%',
-              margin: '0 auto 1rem'
-            }}
-          />
-          <p style={{ color: 'rgba(255,255,255,0.8)' }}>Loading portfolio...</p>
-        </div>
-      </PortfolioContainer>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '400px',
+        color: 'white',
+        fontSize: '1.2rem'
+      }}>
+        Loading portfolio...
+      </div>
     );
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <PortfolioContainer>
-        <Header variants={itemVariants}>
-          <Title>My Portfolio</Title>
-        </Header>
+    <div style={{ 
+      maxWidth: '1200px', 
+      margin: '0 auto', 
+      padding: '2rem',
+      color: 'white'
+    }}>
+      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <h1 style={{ 
+          fontSize: '3rem', 
+          fontWeight: '800', 
+          color: 'white', 
+          marginBottom: '1rem' 
+        }}>
+          Portfolio
+        </h1>
+      </div>
 
-        <Controls>
-          <SearchBox>
-            <SearchIcon>
-              <Search size={20} />
-            </SearchIcon>
-            <SearchInput
-              type="text"
-              placeholder="Search by symbol or name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </SearchBox>
+      {/* Controls */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '1rem', 
+        marginBottom: '2rem', 
+        flexWrap: 'wrap' 
+      }}>
+        <div style={{ position: 'relative', flex: '1', minWidth: '300px' }}>
+          <Search 
+            size={20} 
+            style={{ 
+              position: 'absolute', 
+              left: '1rem', 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              color: 'rgba(255, 255, 255, 0.6)' 
+            }} 
+          />
+          <input
+            type="text"
+            placeholder="Search assets..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '1rem 1rem 1rem 3rem',
+              background: 'rgba(255, 255, 255, 0.9)',
+              border: '2px solid #ddd',
+              borderRadius: '8px',
+              color: '#333',
+              fontSize: '1rem',
+              outline: 'none'
+            }}
+          />
+        </div>
+        
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          style={{
+            padding: '1rem 1.5rem',
+            background: 'rgba(255, 255, 255, 0.9)',
+            border: '2px solid #ddd',
+            borderRadius: '8px',
+            color: '#333',
+            fontSize: '1rem',
+            cursor: 'pointer'
+          }}
+        >
+          <option value="all">All Types</option>
+          <option value="stock">Stocks</option>
+          <option value="crypto">Crypto</option>
+          <option value="etf">ETF</option>
+        </select>
+      </div>
 
-          <FilterButton
-            active={activeFilter === 'all'}
-            onClick={() => setActiveFilter('all')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Filter size={16} />
-            All
-          </FilterButton>
-
-          <FilterButton
-            active={activeFilter === 'stock'}
-            onClick={() => setActiveFilter('stock')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Stocks
-          </FilterButton>
-
-          <FilterButton
-            active={activeFilter === 'bond'}
-            onClick={() => setActiveFilter('bond')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Bonds
-          </FilterButton>
-
-          <FilterButton
-            active={activeFilter === 'crypto'}
-            onClick={() => setActiveFilter('crypto')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Crypto
-          </FilterButton>
-        </Controls>
-
-        {filteredItems.length === 0 ? (
-          <EmptyState
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <EmptyIcon>📊</EmptyIcon>
-            <h3 style={{ color: 'white', marginBottom: '1rem' }}>
-              {searchTerm || activeFilter !== 'all' ? 'No matching items found' : 'No portfolio items yet'}
-            </h3>
-            <p>
-              {searchTerm || activeFilter !== 'all' 
-                ? 'Try adjusting your search or filter criteria'
-                : 'Start building your portfolio by adding your first investment'
-              }
-            </p>
-          </EmptyState>
-        ) : (
-          <PortfolioGrid>
-            <AnimatePresence>
+      {filteredItems.length === 0 ? (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '4rem', 
+          color: 'rgba(255, 255, 255, 0.7)',
+          background: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '12px',
+          border: '2px solid #ddd'
+        }}>
+          <p style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#333' }}>
+            {searchTerm || filterType !== 'all' 
+              ? 'No assets match your search criteria' 
+              : 'Start building your portfolio by adding your first investment'
+            }
+          </p>
+        </div>
+      ) : (
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '12px', 
+          overflow: 'hidden',
+          border: '2px solid #ddd',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}>
+          <table style={{ 
+            width: '100%', 
+            borderCollapse: 'collapse',
+            color: '#333'
+          }}>
+            <thead>
+              <tr style={{ 
+                background: '#f8f9fa',
+                borderBottom: '2px solid #dee2e6'
+              }}>
+                <th style={{ 
+                  padding: '1rem', 
+                  textAlign: 'left', 
+                  fontWeight: '700',
+                  borderRight: '1px solid #dee2e6',
+                  color: '#495057'
+                }}>Asset</th>
+                <th style={{ 
+                  padding: '1rem', 
+                  textAlign: 'center', 
+                  fontWeight: '700',
+                  borderRight: '1px solid #dee2e6',
+                  color: '#495057'
+                }}>Quantity</th>
+                <th style={{ 
+                  padding: '1rem', 
+                  textAlign: 'center', 
+                  fontWeight: '700',
+                  borderRight: '1px solid #dee2e6',
+                  color: '#495057'
+                }}>Purchase Price</th>
+                <th style={{ 
+                  padding: '1rem', 
+                  textAlign: 'center', 
+                  fontWeight: '700',
+                  borderRight: '1px solid #dee2e6',
+                  color: '#495057'
+                }}>Current Price</th>
+                <th style={{ 
+                  padding: '1rem', 
+                  textAlign: 'center', 
+                  fontWeight: '700',
+                  borderRight: '1px solid #dee2e6',
+                  color: '#495057'
+                }}>Purchase Date</th>
+                <th style={{ 
+                  padding: '1rem', 
+                  textAlign: 'center', 
+                  fontWeight: '700',
+                  borderRight: '1px solid #dee2e6',
+                  color: '#495057'
+                }}>Current Value</th>
+                <th style={{ 
+                  padding: '1rem', 
+                  textAlign: 'center', 
+                  fontWeight: '700',
+                  borderRight: '1px solid #dee2e6',
+                  color: '#495057'
+                }}>Performance</th>
+                <th style={{ 
+                  padding: '1rem', 
+                  textAlign: 'center', 
+                  fontWeight: '700',
+                  color: '#495057'
+                }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
               {filteredItems.map((item, index) => {
                 const gainLoss = calculateGainLoss(item);
                 const percentageChange = calculatePercentageChange(item);
                 const isPositive = gainLoss >= 0;
+                const currentValue = item.quantity * item.current_price;
 
                 return (
-                  <PortfolioCard
+                  <tr 
                     key={item.id}
-                    variants={itemVariants}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
+                    style={{ 
+                      borderBottom: '1px solid #dee2e6',
+                      backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8f9fa',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e9ecef'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa'}
                   >
-                    <CardHeader>
-                      <AssetInfo>
-                        <AssetSymbol>{item.symbol}</AssetSymbol>
-                        <AssetName>{item.name}</AssetName>
-                        <AssetType type={item.type}>{item.type}</AssetType>
-                      </AssetInfo>
-                      <Actions>
-                        <ActionButton
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Edit size={16} />
-                        </ActionButton>
-                        <ActionButton
-                          danger
-                          onClick={() => handleDelete(item.id, item.symbol)}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Trash2 size={16} />
-                        </ActionButton>
-                      </Actions>
-                    </CardHeader>
-
-                    <CardBody>
-                      <MetricItem>
-                        <MetricLabel>Quantity</MetricLabel>
-                        <MetricValue>{item.quantity}</MetricValue>
-                      </MetricItem>
-                      <MetricItem>
-                        <MetricLabel>Purchase Price</MetricLabel>
-                        <MetricValue>${item.purchase_price}</MetricValue>
-                      </MetricItem>
-                      <MetricItem>
-                        <MetricLabel>Current Price</MetricLabel>
-                        <MetricValue>${item.current_price}</MetricValue>
-                      </MetricItem>
-                      <MetricItem>
-                        <MetricLabel>Purchase Date</MetricLabel>
-                        <MetricValue>{new Date(item.purchase_date).toLocaleDateString()}</MetricValue>
-                      </MetricItem>
-                    </CardBody>
-
-                    <PerformanceSection>
-                      <CurrentValue>
-                        <ValueLabel>Current Value</ValueLabel>
-                        <ValueAmount>${(item.quantity * item.current_price).toLocaleString()}</ValueAmount>
-                      </CurrentValue>
-                      <PerformanceIndicator positive={isPositive}>
-                        {isPositive ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
-                        <div>
-                          <div>${Math.abs(gainLoss).toLocaleString()}</div>
-                          <div style={{ fontSize: '0.9rem' }}>
-                            {isPositive ? '+' : ''}{percentageChange.toFixed(2)}%
-                          </div>
+                    <td style={{ 
+                      padding: '1rem',
+                      borderRight: '1px solid #dee2e6'
+                    }}>
+                      <div>
+                        <div style={{ 
+                          fontSize: '1.1rem', 
+                          fontWeight: '700', 
+                          marginBottom: '0.25rem',
+                          color: '#212529'
+                        }}>
+                          {item.symbol}
                         </div>
-                      </PerformanceIndicator>
-                    </PerformanceSection>
-                  </PortfolioCard>
+                        <div style={{ 
+                          color: '#6c757d', 
+                          fontSize: '0.9rem',
+                          marginBottom: '0.25rem'
+                        }}>
+                          {item.name}
+                        </div>
+                        <div style={{ 
+                          fontSize: '0.8rem',
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: '12px',
+                          background: '#e9ecef',
+                          color: '#495057',
+                          display: 'inline-block',
+                          border: '1px solid #ced4da'
+                        }}>
+                          {item.type}
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ 
+                      padding: '1rem', 
+                      textAlign: 'center',
+                      borderRight: '1px solid #dee2e6',
+                      fontWeight: '600',
+                      color: '#212529'
+                    }}>{item.quantity}</td>
+                    <td style={{ 
+                      padding: '1rem', 
+                      textAlign: 'center',
+                      borderRight: '1px solid #dee2e6',
+                      fontWeight: '600',
+                      color: '#212529'
+                    }}>${item.purchase_price}</td>
+                    <td style={{ 
+                      padding: '1rem', 
+                      textAlign: 'center',
+                      borderRight: '1px solid #dee2e6',
+                      fontWeight: '600',
+                      color: '#212529'
+                    }}>${item.current_price}</td>
+                    <td style={{ 
+                      padding: '1rem', 
+                      textAlign: 'center',
+                      borderRight: '1px solid #dee2e6',
+                      color: '#495057'
+                    }}>
+                      {new Date(item.purchase_date).toLocaleDateString()}
+                    </td>
+                    <td style={{ 
+                      padding: '1rem', 
+                      textAlign: 'center',
+                      borderRight: '1px solid #dee2e6',
+                      fontWeight: '600',
+                      color: '#212529'
+                    }}>
+                      ${currentValue.toLocaleString()}
+                    </td>
+                    <td style={{ 
+                      padding: '1rem', 
+                      textAlign: 'center',
+                      borderRight: '1px solid #dee2e6'
+                    }}>
+                      <div style={{ 
+                        color: isPositive ? '#28a745' : '#dc3545',
+                        fontWeight: '700'
+                      }}>
+                        <div>${Math.abs(gainLoss).toLocaleString()}</div>
+                        <div style={{ fontSize: '0.9rem' }}>
+                          {isPositive ? '+' : ''}{percentageChange.toFixed(2)}%
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                        <button
+                          style={{
+                            background: '#007bff',
+                            border: '1px solid #0056b3',
+                            borderRadius: '6px',
+                            padding: '0.5rem',
+                            color: 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = '#0056b3'}
+                          onMouseLeave={(e) => e.target.style.background = '#007bff'}
+                        >
+                          <Edit size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id, item.symbol)}
+                          style={{
+                            background: '#dc3545',
+                            border: '1px solid #c82333',
+                            borderRadius: '6px',
+                            padding: '0.5rem',
+                            color: 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = '#c82333'}
+                          onMouseLeave={(e) => e.target.style.background = '#dc3545'}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 );
               })}
-            </AnimatePresence>
-          </PortfolioGrid>
-        )}
-      </PortfolioContainer>
-    </motion.div>
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 };
 

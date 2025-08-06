@@ -263,6 +263,58 @@ const InfoValue = styled.p`
   color: white;
   font-size: 1rem;
   font-weight: 600;
+  margin: 0;
+  word-break: break-word;
+`;
+
+const EditInput = styled.input`
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #3B82F6;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+`;
+
+const EditTextarea = styled.textarea`
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.75rem;
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  line-height: 1.6;
+  
+  &:focus {
+    outline: none;
+    border-color: #3B82F6;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
 `;
 
 const EditButton = styled(motion.button)`
@@ -334,7 +386,7 @@ const StatLabel = styled.div`
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [userProfile, setUserProfile] = useState({
-    name: 'Portfolio Manager',
+    name: 'user',
     role: 'Investment Analyst',
     email: 'manager@portfolio.pro',
     phone: '+1 (555) 123-4567',
@@ -343,7 +395,7 @@ const Profile = () => {
     department: 'Financial Services',
     experience: '5+ Years',
     specialization: 'Portfolio Optimization',
-    bio: 'Experienced investment analyst specializing in portfolio management and risk assessment. Passionate about helping clients achieve their financial goals through strategic investment planning.'
+    bio: 'I am a goal-oriented individual committed to making informed financial decisions with a long-term perspective. I value expert insight, strategic risk assessment, and a data-driven approach to investment planning. My objective is to collaborate with professionals who can help translate market complexity into clear, actionable strategies aligned with my financial aspirations.'
   });
 
   const handleSave = () => {
@@ -406,10 +458,7 @@ const Profile = () => {
               </AvatarContainer>
               <UserName>{userProfile.name}</UserName>
               <UserRole>{userProfile.role}</UserRole>
-              <StatusBadge>
-                <OnlineIndicator />
-                Online
-              </StatusBadge>
+              
             </AvatarSection>
 
             <StatsGrid>
@@ -435,16 +484,7 @@ const Profile = () => {
                 <StatLabel>Success Rate</StatLabel>
               </StatCard>
 
-              <StatCard
-                variants={itemVariants}
-                whileHover={{ scale: 1.05 }}
-              >
-                <StatIcon gradient="linear-gradient(135deg, #F59E0B 0%, #D97706 100%)">
-                  <Award size={20} />
-                </StatIcon>
-                <StatValue>12</StatValue>
-                <StatLabel>Certifications</StatLabel>
-              </StatCard>
+              
 
               <StatCard
                 variants={itemVariants}
@@ -488,7 +528,16 @@ const Profile = () => {
                 </InfoIcon>
                 <InfoContent>
                   <InfoLabel>Email Address</InfoLabel>
-                  <InfoValue>{userProfile.email}</InfoValue>
+                  {isEditing ? (
+                    <EditInput
+                      type="email"
+                      value={userProfile.email}
+                      onChange={(e) => setUserProfile({ ...userProfile, email: e.target.value })}
+                      placeholder="Email Address"
+                    />
+                  ) : (
+                    <InfoValue>{userProfile.email}</InfoValue>
+                  )}
                 </InfoContent>
               </InfoItem>
 
@@ -501,7 +550,16 @@ const Profile = () => {
                 </InfoIcon>
                 <InfoContent>
                   <InfoLabel>Phone Number</InfoLabel>
-                  <InfoValue>{userProfile.phone}</InfoValue>
+                  {isEditing ? (
+                    <EditInput
+                      type="tel"
+                      value={userProfile.phone}
+                      onChange={(e) => setUserProfile({ ...userProfile, phone: e.target.value })}
+                      placeholder="Phone Number"
+                    />
+                  ) : (
+                    <InfoValue>{userProfile.phone}</InfoValue>
+                  )}
                 </InfoContent>
               </InfoItem>
 
@@ -514,7 +572,16 @@ const Profile = () => {
                 </InfoIcon>
                 <InfoContent>
                   <InfoLabel>Location</InfoLabel>
-                  <InfoValue>{userProfile.location}</InfoValue>
+                  {isEditing ? (
+                    <EditInput
+                      type="text"
+                      value={userProfile.location}
+                      onChange={(e) => setUserProfile({ ...userProfile, location: e.target.value })}
+                      placeholder="Location"
+                    />
+                  ) : (
+                    <InfoValue>{userProfile.location}</InfoValue>
+                  )}
                 </InfoContent>
               </InfoItem>
 
@@ -527,35 +594,22 @@ const Profile = () => {
                 </InfoIcon>
                 <InfoContent>
                   <InfoLabel>Join Date</InfoLabel>
-                  <InfoValue>{new Date(userProfile.joinDate).toLocaleDateString()}</InfoValue>
+                  {isEditing ? (
+                    <EditInput
+                      type="date"
+                      value={userProfile.joinDate}
+                      onChange={(e) => setUserProfile({ ...userProfile, joinDate: e.target.value })}
+                      placeholder="Join Date"
+                    />
+                  ) : (
+                    <InfoValue>{new Date(userProfile.joinDate).toLocaleDateString()}</InfoValue>
+                  )}
                 </InfoContent>
               </InfoItem>
 
-              <InfoItem
-                variants={itemVariants}
-                whileHover={{ x: 5 }}
-              >
-                <InfoIcon gradient="linear-gradient(135deg, #EF4444 0%, #DC2626 100%)">
-                  <Briefcase size={18} />
-                </InfoIcon>
-                <InfoContent>
-                  <InfoLabel>Department</InfoLabel>
-                  <InfoValue>{userProfile.department}</InfoValue>
-                </InfoContent>
-              </InfoItem>
+              
 
-              <InfoItem
-                variants={itemVariants}
-                whileHover={{ x: 5 }}
-              >
-                <InfoIcon gradient="linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)">
-                  <Award size={18} />
-                </InfoIcon>
-                <InfoContent>
-                  <InfoLabel>Specialization</InfoLabel>
-                  <InfoValue>{userProfile.specialization}</InfoValue>
-                </InfoContent>
-              </InfoItem>
+              
             </InfoGrid>
 
             <InfoSection style={{ marginTop: '2rem' }}>
@@ -563,16 +617,24 @@ const Profile = () => {
                 <User size={20} />
                 About Me
               </SectionTitle>
-              <div style={{ 
-                background: 'rgba(255, 255, 255, 0.05)', 
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                padding: '1.5rem',
-                color: 'rgba(255, 255, 255, 0.8)',
-                lineHeight: '1.6'
-              }}>
-                {userProfile.bio}
-              </div>
+              {isEditing ? (
+                <EditTextarea
+                  value={userProfile.bio}
+                  onChange={(e) => setUserProfile({ ...userProfile, bio: e.target.value })}
+                  placeholder="About Me"
+                />
+              ) : (
+                <div style={{ 
+                  background: 'rgba(255, 255, 255, 0.05)', 
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  lineHeight: '1.6'
+                }}>
+                  {userProfile.bio}
+                </div>
+              )}
             </InfoSection>
           </ProfileCard>
         </ProfileGrid>

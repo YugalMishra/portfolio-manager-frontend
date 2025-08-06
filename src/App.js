@@ -11,7 +11,7 @@ import Portfolio from './components/Portfolio';
 import AddItem from './components/AddItem';
 import Performance from './components/Performance';
 import Profile from './components/Profile';
-import Settings from './components/Settings';
+
 import LoadingScreen from './components/LoadingScreen';
 
 // Styled Components
@@ -235,21 +235,8 @@ function App() {
                   </motion.div>
                 } 
               />
-              <Route 
-                path="/settings" 
-                element={
-                  <motion.div
-                    key="settings"
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                  >
-                    <Settings />
-                  </motion.div>
-                } 
-              />
+              
+              
             </Routes>
           </AnimatePresence>
         </MainContent>
