@@ -203,14 +203,14 @@ const Portfolio = () => {
                   fontWeight: '700',
                   borderRight: '1px solid #dee2e6',
                   color: '#495057'
-                }}>Purchase Date</th>
+                }}>Current Value</th>
                 <th style={{ 
                   padding: '1rem', 
                   textAlign: 'center', 
                   fontWeight: '700',
                   borderRight: '1px solid #dee2e6',
                   color: '#495057'
-                }}>Current Value</th>
+                }}>Purchase Date</th>
                 <th style={{ 
                   padding: '1rem', 
                   textAlign: 'center', 
