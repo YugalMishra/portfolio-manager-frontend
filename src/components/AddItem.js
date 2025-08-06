@@ -347,7 +347,9 @@ const AddItem = () => {
       newErrors.purchase_price = 'Purchase price must be greater than 0';
     }
     
-
+    if (!formData.current_price || formData.current_price <= 0) {
+      newErrors.current_price = 'Current price must be greater than 0';
+    }
     
     if (!formData.purchase_date) {
       newErrors.purchase_date = 'Purchase date is required';
@@ -446,7 +448,7 @@ const AddItem = () => {
       <AddItemContainer>
         <Header variants={itemVariants}>
           <Title>Add New Investment</Title>
-          <Subtitle>Expand your portfolio with stocks, bonds, crypto, and more</Subtitle>
+      
         </Header>
 
         <FormCard
@@ -574,7 +576,30 @@ const AddItem = () => {
                 )}
               </FormGroup>
 
-              
+              <FormGroup variants={itemVariants}>
+                <Label>
+                  <DollarSign size={16} />
+                  Current Price
+                </Label>
+                <Input
+                  type="number"
+                  name="current_price"
+                  value={formData.current_price}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  required
+                />
+                {errors.current_price && (
+                  <ErrorMessage
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    {errors.current_price}
+                  </ErrorMessage>
+                )}
+              </FormGroup>
             </FormRow>
 
             <FormGroup variants={itemVariants}>
@@ -599,7 +624,7 @@ const AddItem = () => {
               )}
             </FormGroup>
 
-            {formData.quantity && (
+            {formData.quantity && formData.current_price && (
               <PreviewCard
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

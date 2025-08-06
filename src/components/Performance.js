@@ -343,7 +343,7 @@ const Performance = () => {
       <PerformanceContainer>
         <Header variants={itemVariants}>
           <Title>Performance Analytics</Title>
-          <Subtitle>Detailed insights into your portfolio performance</Subtitle>
+          
         </Header>
 
         <MetricsRow>
