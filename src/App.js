@@ -8,9 +8,8 @@ import styled from 'styled-components';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import Portfolio from './components/Portfolio';
-import AddItem from './components/AddItem';
-import Performance from './components/Performance';
 import Profile from './components/Profile';
+import AnalysisPage from './components/AnalysisPage';
 
 import LoadingScreen from './components/LoadingScreen';
 
@@ -191,36 +190,6 @@ function App() {
                 } 
               />
               <Route 
-                path="/add" 
-                element={
-                  <motion.div
-                    key="add"
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                  >
-                    <AddItem />
-                  </motion.div>
-                } 
-              />
-              <Route 
-                path="/performance" 
-                element={
-                  <motion.div
-                    key="performance"
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                  >
-                    <Performance />
-                  </motion.div>
-                } 
-              />
-              <Route 
                 path="/profile" 
                 element={
                   <motion.div
@@ -232,6 +201,21 @@ function App() {
                     transition={pageTransition}
                   >
                     <Profile />
+                  </motion.div>
+                } 
+              />
+              <Route 
+                path="/analysis" 
+                element={
+                  <motion.div
+                    key="analysis"
+                    initial="initial"
+                    animate="in"
+                    exit="out"
+                    variants={pageVariants}
+                    transition={pageTransition}
+                  >
+                    <AnalysisPage />
                   </motion.div>
                 } 
               />

@@ -12,7 +12,8 @@ import {
   DollarSign,
   User,
   Settings,
-  LogOut
+  LogOut,
+  BarChart3
 } from 'lucide-react';
 
 const NavContainer = styled(motion.nav)`
@@ -338,8 +339,7 @@ const Navbar = () => {
   const navItems = [
     { path: '/', label: 'Dashboard', icon: Home },
     { path: '/portfolio', label: 'Portfolio', icon: Briefcase },
-    { path: '/add', label: 'Add Item', icon: Plus },
-    { path: '/performance', label: 'Performance', icon: TrendingUp },
+    { path: '/analysis', label: 'Analysis', icon: BarChart3 },
   ];
 
   const isActive = (path) => location.pathname === path;
