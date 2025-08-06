@@ -347,9 +347,7 @@ const AddItem = () => {
       newErrors.purchase_price = 'Purchase price must be greater than 0';
     }
     
-    if (!formData.current_price || formData.current_price <= 0) {
-      newErrors.current_price = 'Current price must be greater than 0';
-    }
+
     
     if (!formData.purchase_date) {
       newErrors.purchase_date = 'Purchase date is required';
@@ -601,7 +599,7 @@ const AddItem = () => {
               )}
             </FormGroup>
 
-            {formData.quantity && formData.current_price && (
+            {formData.quantity && (
               <PreviewCard
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
