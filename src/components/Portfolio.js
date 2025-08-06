@@ -203,14 +203,14 @@ const Portfolio = () => {
                   fontWeight: '700',
                   borderRight: '1px solid #dee2e6',
                   color: '#495057'
-                }}>Current Value</th>
+                }}>Purchase Date</th>
                 <th style={{ 
                   padding: '1rem', 
                   textAlign: 'center', 
                   fontWeight: '700',
                   borderRight: '1px solid #dee2e6',
                   color: '#495057'
-                }}>Purchase Date</th>
+                }}>Current Value</th>
                 <th style={{ 
                   padding: '1rem', 
                   textAlign: 'center', 
@@ -291,13 +291,6 @@ const Portfolio = () => {
                       fontWeight: '600',
                       color: '#212529'
                     }}>${item.purchase_price}</td>
-                    <td style={{ 
-                      padding: '1rem', 
-                      textAlign: 'center',
-                      borderRight: '1px solid #dee2e6',
-                      fontWeight: '600',
-                      color: '#212529'
-                    }}>${item.current_price}</td>
                     <td style={{ 
                       padding: '1rem', 
                       textAlign: 'center',
