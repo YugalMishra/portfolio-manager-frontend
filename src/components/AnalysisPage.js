@@ -404,6 +404,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 const AnalysisPage = () => {
   // AddItem state
   const [formData, setFormData] = useState({
+    symbol: '',
     name: '',
     type: 'stock',
     quantity: '',
@@ -481,6 +482,10 @@ const AnalysisPage = () => {
   const validateForm = () => {
     const newErrors = {};
     
+    if (!formData.symbol.trim()) {
+      newErrors.symbol = 'Asset symbol is required';
+    }
+    
     if (!formData.name.trim()) {
       newErrors.name = 'Asset name is required';
     }
@@ -530,6 +535,7 @@ const AnalysisPage = () => {
       
       // Reset form
       setFormData({
+        symbol: '',
         name: '',
         type: 'stock',
         quantity: '',
@@ -617,6 +623,26 @@ const AnalysisPage = () => {
             )}
 
             <Form onSubmit={handleSubmit}>
+              <FormGroup variants={itemVariants}>
+                <Label>Asset Symbol</Label>
+                <Input
+                  type="text"
+                  name="symbol"
+                  value={formData.symbol}
+                  onChange={handleInputChange}
+                  placeholder="e.g., AAPL"
+                  required
+                />
+                {errors.symbol && (
+                  <ErrorMessage
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    {errors.symbol}
+                  </ErrorMessage>
+                )}
+              </FormGroup>
+
               <FormGroup variants={itemVariants}>
                 <Label>Asset Name</Label>
                 <Input
