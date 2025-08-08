@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000'; // Update if deployed
+const API_BASE = "https://portfolio-manager-backend-production-d307.up.railway.app" || 'http://localhost:5000'; // Update if deployed
 
 // ➕ Add a new asset to portfolio
 export const addPortfolioItem = async (item) => {
