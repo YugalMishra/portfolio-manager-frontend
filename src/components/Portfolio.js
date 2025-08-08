@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Search } from 'lucide-react';
-import { getPortfolio, deletePortfolioItem, updatePortfolioItem } from '../services/mockData';
+import { getPortfolio, removeAsset } from '../services/api';
 import { toast } from 'react-hot-toast';
 
 const Portfolio = () => {
@@ -14,10 +14,13 @@ const Portfolio = () => {
     const fetchPortfolio = async () => {
       try {
         const data = await getPortfolio();
-        setPortfolioItems(data);
+        // Handle different API response structures
+        const portfolioData = data.portfolio || data || [];
+        setPortfolioItems(Array.isArray(portfolioData) ? portfolioData : []);
       } catch (error) {
         console.error('Error fetching portfolio:', error);
         toast.error('Failed to load portfolio');
+        setPortfolioItems([]); // Ensure it's always an array
       } finally {
         setLoading(false);
       }
@@ -25,19 +28,6 @@ const Portfolio = () => {
 
     fetchPortfolio();
   }, []);
-
-  const handleDelete = async (id, symbol) => {
-    if (window.confirm(`Are you sure you want to delete ${symbol}?`)) {
-      try {
-        await deletePortfolioItem(id);
-        setPortfolioItems(prev => prev.filter(item => item.id !== id));
-        toast.success(`${symbol} removed from portfolio`);
-      } catch (error) {
-        console.error('Error deleting item:', error);
-        toast.error('Failed to delete item');
-      }
-    }
-  };
 
   const openSellModal = (item) => {
     setSellModal({ isOpen: true, item, quantity: '' });
@@ -51,7 +41,6 @@ const Portfolio = () => {
     const { item, quantity } = sellModal;
     const sellQuantity = parseInt(quantity);
 
-    // Validation
     if (!sellQuantity || sellQuantity <= 0) {
       toast.error('Please enter a valid quantity');
       return;
@@ -63,23 +52,18 @@ const Portfolio = () => {
     }
 
     try {
-      if (sellQuantity === item.quantity) {
-        // Sell all shares - remove item completely
-        await deletePortfolioItem(item.id);
-        setPortfolioItems(prev => prev.filter(i => i.id !== item.id));
-        toast.success(`Sold all ${item.quantity} shares of ${item.symbol}`);
-      } else {
-        // Partial sale - update quantity
-        const updatedItem = { ...item, quantity: item.quantity - sellQuantity };
-        await updatePortfolioItem(item.id, updatedItem);
-        setPortfolioItems(prev => prev.map(i => 
-          i.id === item.id ? updatedItem : i
-        ));
-        toast.success(`Sold ${sellQuantity} shares of ${item.symbol}`);
-      }
+      await removeAsset({ symbol: item.symbol, quantity: sellQuantity });
+
+      toast.success(`Sold ${sellQuantity} shares of ${item.symbol}`);
+
+      // Re-fetch updated portfolio
+      const updatedData = await getPortfolio();
+      // Handle different API response structures
+      const updatedPortfolio = updatedData.portfolio || updatedData || [];
+      setPortfolioItems(Array.isArray(updatedPortfolio) ? updatedPortfolio : []);
       closeSellModal();
     } catch (error) {
-      console.error('Error selling item:', error);
+      console.error('Error selling shares:', error);
       toast.error('Failed to sell shares');
     }
   };
@@ -92,12 +76,39 @@ const Portfolio = () => {
     return ((item.current_price - item.purchase_price) / item.purchase_price) * 100;
   };
 
-  const filteredItems = portfolioItems.filter(item => {
-    const matchesSearch = item.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || item.type.toLowerCase() === filterType.toLowerCase();
+  // Helper function to format date safely
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'Invalid Date';
+    }
+  };
+
+  // Ensure portfolioItems is always an array before filtering
+  const filteredItems = Array.isArray(portfolioItems) ? portfolioItems.filter(item => {
+    const symbol = (item.symbol || '').toLowerCase();
+    const name = (item.name || '').toLowerCase();
+    const type = (item.type || '').toLowerCase();
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch = symbol.includes(search) || name.includes(search);
+    const matchesFilter = filterType === 'all' || type === filterType.toLowerCase();
+
     return matchesSearch && matchesFilter;
-  });
+  }) : [];
 
   if (loading) {
     return (
@@ -281,7 +292,7 @@ const Portfolio = () => {
 
                 return (
                   <tr 
-                    key={item.id}
+                    key={item.id || `${item.symbol}-${index}`} // Fallback key
                     style={{ 
                       borderBottom: '1px solid #dee2e6',
                       backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8f9fa',
@@ -301,14 +312,14 @@ const Portfolio = () => {
                           marginBottom: '0.25rem',
                           color: '#212529'
                         }}>
-                          {item.symbol}
+                          {item.symbol || 'N/A'}
                         </div>
                         <div style={{ 
                           color: '#6c757d', 
                           fontSize: '0.9rem',
                           marginBottom: '0.25rem'
                         }}>
-                          {item.name}
+                          {item.name || 'Unknown Asset'}
                         </div>
                         <div style={{ 
                           fontSize: '0.8rem',
@@ -319,7 +330,7 @@ const Portfolio = () => {
                           display: 'inline-block',
                           border: '1px solid #ced4da'
                         }}>
-                          {item.type}
+                          {item.type || 'unknown'}
                         </div>
                       </div>
                     </td>
@@ -329,21 +340,21 @@ const Portfolio = () => {
                       borderRight: '1px solid #dee2e6',
                       fontWeight: '600',
                       color: '#212529'
-                    }}>{item.quantity}</td>
+                    }}>{item.quantity || 0}</td>
                     <td style={{ 
                       padding: '1rem', 
                       textAlign: 'center',
                       borderRight: '1px solid #dee2e6',
                       fontWeight: '600',
                       color: '#212529'
-                    }}>${item.purchase_price}</td>
+                    }}>${item.purchase_price || 0}</td>
                     <td style={{ 
                       padding: '1rem', 
                       textAlign: 'center',
                       borderRight: '1px solid #dee2e6',
                       color: '#495057'
                     }}>
-                      {new Date(item.purchase_date).toLocaleDateString()}
+                      {formatDate(item.purchase_date)}
                     </td>
                     <td style={{ 
                       padding: '1rem', 

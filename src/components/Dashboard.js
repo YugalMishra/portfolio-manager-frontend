@@ -1,70 +1,237 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, TrendingDown, PieChart, Activity, Plus, Minus, History, CreditCard, Wallet, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { getPortfolioSummary } from '../services/mockData';
 import { toast } from 'react-hot-toast';
 
+// API base URL - adjust according to your backend setup
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api';
+
 const Dashboard = () => {
-  const [summary, setSummary] = useState(null);
+  const [portfolioData, setPortfolioData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSettlementModal, setShowSettlementModal] = useState(false);
-  const [transactionType, setTransactionType] = useState('deposit'); // 'deposit' or 'withdrawal'
+  const [transactionType, setTransactionType] = useState('deposit');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [settlementBalance, setSettlementBalance] = useState(25000); // Mock initial balance
-  const [transactions, setTransactions] = useState([
-    { id: 1, type: 'deposit', amount: 25000, description: 'Initial deposit', date: '2024-01-15', balance: 25000 },
-    { id: 2, type: 'withdrawal', amount: 5000, description: 'Stock purchase - AAPL', date: '2024-01-20', balance: 20000 },
-    { id: 3, type: 'deposit', amount: 10000, description: 'Monthly savings', date: '2024-02-01', balance: 30000 },
-  ]);
+  const [settlementBalance, setSettlementBalance] = useState(0);
+  const [transactions, setTransactions] = useState([]);
+  const [transactionLoading, setTransactionLoading] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchSettlementData();
   }, []);
 
+  // Fetch portfolio data from backend
   const fetchDashboardData = async () => {
     try {
-      const data = await getPortfolioSummary();
-      setSummary(data);
+      // Try portfolio analysis first
+      const response = await fetch(`${API_BASE_URL}/portfolio/analysis`);
+      if (!response.ok) {
+        // If analysis fails, try the assets portfolio endpoint
+        const portfolioResponse = await fetch(`${API_BASE_URL}/assets/portfolio`);
+        if (!portfolioResponse.ok) throw new Error('Both portfolio endpoints failed');
+        
+        const portfolioData = await portfolioResponse.json();
+        console.log('Portfolio data from assets endpoint:', portfolioData);
+        
+        // Transform assets portfolio data
+        const assets = portfolioData.portfolio || [];
+        const totalValue = assets.reduce((sum, asset) => sum + parseFloat(asset.current_value || 0), 0);
+        const totalGainLoss = assets.reduce((sum, asset) => sum + parseFloat(asset.unrealized_profit || 0), 0);
+        
+        // Group by type
+        const typeGroups = {};
+        assets.forEach(asset => {
+          if (!typeGroups[asset.type]) {
+            typeGroups[asset.type] = {
+              count: 0,
+              current_value: 0,
+              gain_loss: 0
+            };
+          }
+          typeGroups[asset.type].count += 1;
+          typeGroups[asset.type].current_value += parseFloat(asset.current_value || 0);
+          typeGroups[asset.type].gain_loss += parseFloat(asset.unrealized_profit || 0);
+        });
+        
+        const transformedData = {
+          total_value: totalValue,
+          total_gain_loss: totalGainLoss,
+          total_items: assets.length,
+          by_type: Object.keys(typeGroups).map(type => ({
+            type: type,
+            count: typeGroups[type].count,
+            current_value: typeGroups[type].current_value,
+            gain_loss: typeGroups[type].gain_loss
+          }))
+        };
+        
+        setPortfolioData(transformedData);
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('Portfolio analysis data:', data);
+      
+      // Transform the analysis data to match the component's expected format
+      const transformedData = {
+        total_value: parseFloat(data.summary?.total_portfolio_value) || 0,
+        total_gain_loss: (parseFloat(data.summary?.total_unrealized_profit) || 0) + (parseFloat(data.summary?.total_realized_profit) || 0),
+        total_items: data.assets?.length || 0,
+        by_type: Object.keys(data.asset_breakdown || {}).map(type => ({
+          type: type,
+          count: data.assets?.filter(asset => asset.type === type).length || 0,
+          current_value: data.asset_breakdown[type] || 0,
+          gain_loss: data.assets?.filter(asset => asset.type === type)
+            .reduce((sum, asset) => sum + parseFloat(asset.unrealized_profit || 0), 0) || 0
+        }))
+      };
+      
+      setPortfolioData(transformedData);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      toast.error('Failed to load dashboard data');
+      console.error('Error fetching portfolio data:', error);
+      
+      // Set default data if API fails
+      setPortfolioData({
+        total_value: 0,
+        total_gain_loss: 0,
+        total_items: 0,
+        by_type: []
+      });
+      
+      // Don't show error toast - just log it for now
+      console.warn('Using fallback portfolio data');
+    }
+  };
+
+  // Fetch settlement balance and transaction history from backend
+  const fetchSettlementData = async () => {
+    try {
+      setLoading(true);
+      let currentBalance = 0;
+      
+      // Fetch balance
+      const balanceResponse = await fetch(`${API_BASE_URL}/settlement/balance`);
+      if (balanceResponse.ok) {
+        const balanceData = await balanceResponse.json();
+        currentBalance = parseFloat(balanceData.balance) || 0;
+        setSettlementBalance(currentBalance);
+      } else {
+        console.warn('Settlement balance API failed, using default');
+        setSettlementBalance(0);
+      }
+
+      // Fetch transaction history
+      const historyResponse = await fetch(`${API_BASE_URL}/settlement/history`);
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json();
+        
+        // Transform backend data to match frontend format
+        const formattedTransactions = (historyData.history || []).map(transaction => {
+          // Determine the display type based on the transaction
+          // If it's a withdrawal OR has negative amount, show as withdrawal
+          // If it's a deposit, asset sale, or positive amount, show as deposit
+          let displayType = 'deposit';
+          let displayAmount = Math.abs(transaction.amount);
+          
+          // Check if this is an actual withdrawal (negative impact on balance)
+          if (transaction.type === 'withdraw' || transaction.amount < 0) {
+            displayType = 'withdrawal';
+          }
+          
+          return {
+            id: transaction.id,
+            type: displayType,
+            amount: displayAmount,
+            description: transaction.note || 
+              (displayType === 'withdrawal' ? 'Cash withdrawal' : 
+               transaction.type === 'asset_sale' ? 'Asset sale proceeds' : 'Cash deposit'),
+            date: new Date(transaction.date).toISOString().split('T')[0],
+            balance: 0 // We'll calculate running balance if needed
+          };
+        });
+
+        // Calculate running balance for display (from most recent backwards)
+        let runningBalance = currentBalance;
+        const transactionsWithBalance = formattedTransactions.map((transaction, index) => {
+          const transactionWithBalance = { ...transaction, balance: runningBalance };
+          if (index < formattedTransactions.length - 1) {
+            // Adjust running balance for next transaction (going backwards in time)
+            if (transaction.type === 'deposit') {
+              runningBalance -= transaction.amount;
+            } else {
+              runningBalance += transaction.amount;
+            }
+          }
+          return transactionWithBalance;
+        });
+
+        setTransactions(transactionsWithBalance);
+      } else {
+        console.warn('Settlement history API failed, using empty array');
+        setTransactions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching settlement data:', error);
+      // Set defaults instead of showing error
+      setSettlementBalance(0);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTransaction = () => {
+  const handleTransaction = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       toast.error('Please enter a valid amount');
       return;
     }
 
     const transactionAmount = parseFloat(amount);
-    const newBalance = transactionType === 'deposit' 
-      ? settlementBalance + transactionAmount 
-      : settlementBalance - transactionAmount;
 
+    // Check for sufficient balance on withdrawal
     if (transactionType === 'withdrawal' && transactionAmount > settlementBalance) {
       toast.error('Insufficient balance');
       return;
     }
 
-    const newTransaction = {
-      id: transactions.length + 1,
-      type: transactionType,
-      amount: transactionAmount,
-      description: description || `${transactionType === 'deposit' ? 'Cash deposit' : 'Cash withdrawal'}`,
-      date: new Date().toISOString().split('T')[0],
-      balance: newBalance
-    };
+    setTransactionLoading(true);
 
-    setTransactions([newTransaction, ...transactions]);
-    setSettlementBalance(newBalance);
-    setAmount('');
-    setDescription('');
-    setShowSettlementModal(false);
-    
-    toast.success(`${transactionType === 'deposit' ? 'Deposit' : 'Withdrawal'} successful!`);
+    try {
+      const endpoint = transactionType === 'deposit' ? '/settlement/add' : '/settlement/withdraw';
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: transactionAmount,
+          note: description || `User ${transactionType}`
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Transaction failed');
+      }
+
+      const result = await response.json();
+      toast.success(result.message);
+
+      // Reset form
+      setAmount('');
+      setDescription('');
+      setShowSettlementModal(false);
+
+      // Refresh settlement data
+      await fetchSettlementData();
+
+    } catch (error) {
+      console.error('Transaction error:', error);
+      toast.error(error.message || 'Transaction failed');
+    } finally {
+      setTransactionLoading(false);
+    }
   };
 
   if (loading) {
@@ -82,8 +249,8 @@ const Dashboard = () => {
     );
   }
 
-  const totalValue = summary?.total_value || 0;
-  const totalGainLoss = summary?.total_gain_loss || 0;
+  const totalValue = portfolioData?.total_value || 0;
+  const totalGainLoss = portfolioData?.total_gain_loss || 0;
   const isPositive = totalGainLoss >= 0;
   const percentageChange = totalValue > 0 ? ((totalGainLoss / (totalValue - totalGainLoss)) * 100) : 0;
 
@@ -219,7 +386,7 @@ const Dashboard = () => {
                 marginBottom: '0.5rem',
                 fontFamily: 'monospace'
               }}>
-                {summary?.total_items || 0}
+                {portfolioData?.total_items || 0}
               </div>
               <div style={{ color: '#6b7280', fontSize: '1rem', fontWeight: '500' }}>
                 Total Holdings
@@ -229,7 +396,7 @@ const Dashboard = () => {
                 color: '#6b7280',
                 fontSize: '0.9rem'
               }}>
-                Across {summary?.by_type?.length || 0} asset types
+                Across {portfolioData?.by_type?.length || 0} asset types
               </div>
             </div>
           </div>
@@ -256,7 +423,7 @@ const Dashboard = () => {
             </h3>
             
             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              {summary?.by_type?.filter(type => type && type.type)?.map((type, index) => (
+              {portfolioData?.by_type?.filter(type => type && type.type)?.map((type, index) => (
                 <div
                   key={type.type}
                   style={{
@@ -306,6 +473,16 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
+              {(!portfolioData?.by_type || portfolioData.by_type.length === 0) && (
+                <div style={{
+                  textAlign: 'center',
+                  color: '#6b7280',
+                  padding: '2rem',
+                  fontSize: '0.9rem'
+                }}>
+                  No assets in portfolio
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -417,7 +594,7 @@ const Dashboard = () => {
             </h3>
             
             <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-              {transactions.slice(0, 5).map((transaction) => (
+              {transactions.slice(0, 3).map((transaction) => (
                 <div
                   key={transaction.id}
                   style={{
@@ -468,6 +645,16 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
+              {transactions.length === 0 && (
+                <div style={{
+                  textAlign: 'center',
+                  color: '#6b7280',
+                  padding: '2rem',
+                  fontSize: '0.9rem'
+                }}>
+                  No transactions yet
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -508,7 +695,7 @@ const Dashboard = () => {
                 color: '#1f2937',
                 fontFamily: 'monospace'
               }}>
-                ${settlementBalance.toLocaleString()}
+                ₹{settlementBalance.toLocaleString()}
               </div>
             </div>
 
@@ -572,28 +759,6 @@ const Dashboard = () => {
               />
             </div>
 
-            <div style={{ marginBottom: '2rem' }}>
-              <label style={{ color: '#374151', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
-                Description (Optional)
-              </label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter description"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  outline: 'none'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-              />
-            </div>
-
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button
                 onClick={() => setShowSettlementModal(false)}
@@ -607,23 +772,25 @@ const Dashboard = () => {
                   cursor: 'pointer',
                   fontWeight: '600'
                 }}
+                disabled={transactionLoading}
               >
                 Cancel
               </button>
               <button
                 onClick={handleTransaction}
+                disabled={transactionLoading}
                 style={{
                   flex: 1,
                   padding: '0.75rem',
                   border: 'none',
                   borderRadius: '8px',
-                  background: transactionType === 'deposit' ? '#10b981' : '#ef4444',
+                  background: transactionLoading ? '#9ca3af' : (transactionType === 'deposit' ? '#10b981' : '#ef4444'),
                   color: 'white',
-                  cursor: 'pointer',
+                  cursor: transactionLoading ? 'not-allowed' : 'pointer',
                   fontWeight: '600'
                 }}
               >
-                {transactionType === 'deposit' ? 'Deposit' : 'Withdraw'} ${amount || '0'}
+                {transactionLoading ? 'Processing...' : `${transactionType === 'deposit' ? 'Deposit' : 'Withdraw'} ${amount || '0'}`}
               </button>
             </div>
           </div>
